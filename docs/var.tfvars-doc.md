@@ -365,3 +365,13 @@ This variable can be used to enable API server health checks in HAProxy.
 ```
 haproxy_apiserver_healthcheck = true
 ```
+
+### Node name configuration
+
+This variable determines whether to include the full domain name for the worker and control plane nodes.
+
+```
+include_cluster_domain      = false
+```
+Set it to true if you prefer to include the full domain name for the worker and control plane nodes during OCP deployment.
+

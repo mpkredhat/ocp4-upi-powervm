@@ -335,6 +335,12 @@ variable "pull_secret_file" {
 variable "cluster_domain" {
   default = "rhocp.com"
 }
+
+variable "include_cluster_domain" {
+  type        = bool
+  description = "Set to true to include the full domain name for worker and control plane for OCP deployment."
+  default     = false
+}
 # Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character
 # Should not be more than 14 characters
 variable "cluster_id_prefix" {

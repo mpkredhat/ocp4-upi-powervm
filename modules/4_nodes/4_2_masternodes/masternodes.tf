@@ -47,7 +47,11 @@ data "ignition_file" "m_hostname" {
   content {
     mime    = "text/plain"
     content = <<EOF
+%{if var.include_cluster_domain}
+master-${count.index}.${var.cluster_id}.${var.cluster_domain}
+%{else}
 master-${count.index}
+%{endif}
 EOF
   }
 }

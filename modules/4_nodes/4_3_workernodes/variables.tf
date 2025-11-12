@@ -30,6 +30,8 @@ variable "worker" {
   }
 }
 
+variable "cluster_domain" {}
+variable "include_cluster_domain" {}
 variable "scg_id" {}
 variable "scg_flavor_is_public" {}
 variable "openstack_availability_zone" {}
