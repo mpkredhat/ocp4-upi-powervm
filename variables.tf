@@ -328,6 +328,12 @@ variable "release_image_override" {
   default = ""
 }
 
+variable "qe_only_disable_image_policy" {
+  type        = bool
+  description = "IBM/Red Hat QE Only: Disables ClusterImagePolicy so Nightly builds can be deployed. This feature puts a cluster in unsupported mode."
+  default     = false
+}
+
 variable "pull_secret_file" {
   default = "data/pull-secret.txt"
 }
@@ -633,4 +639,15 @@ variable "haproxy_apiserver_healthcheck" {
   type        = bool
   description = "Flag to enable the haproxy_apiserver_healthcheck which enables API server healthchecks in haproxy"
   default     = true
+}
+
+variable "os_image_stream" {
+  type        = string
+  description = "OS image stream for RHEL. Accepts 'rhel-9' or 'rhel-10'. If blank, osImageStream is omitted from install-config.yaml"
+  default     = ""
+
+  validation {
+    condition     = var.os_image_stream == "" || var.os_image_stream == "rhel-9" || var.os_image_stream == "rhel-10"
+    error_message = "The os_image_stream value must be blank, 'rhel-9', or 'rhel-10'."
+  }
 }

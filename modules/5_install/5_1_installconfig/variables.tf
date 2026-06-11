@@ -43,6 +43,7 @@ variable "worker_ips" {}
 variable "public_key" {}
 variable "pull_secret" {}
 variable "release_image_override" {}
+variable "qe_only_disable_image_policy" {}
 variable "fips_compliant" {}
 
 variable "private_network_mtu" {}
@@ -104,3 +105,5 @@ variable "kdump_kexec_args" {}
 variable "kdump_img" {}
 variable "kdump_log_path" {}
 variable "kdump_crash_kernel_memory" {}
+
+variable "os_image_stream" {}
