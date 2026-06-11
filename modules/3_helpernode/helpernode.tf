@@ -75,6 +75,7 @@ locals {
     local_registry  = local.local_registry
     client_tarball  = var.openshift_client_tarball
     install_tarball = var.openshift_install_tarball
+    oc_mirror       = var.oc_mirror
     fips            = var.fips_compliant
   }
   helpernode_inventory = {

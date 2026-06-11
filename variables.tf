@@ -494,7 +494,9 @@ variable "ocp_release_tag" {
   default     = "4.4.9-ppc64le"
 }
 
-
+variable "oc_mirror" {
+  default     = "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-4.20/oc-mirror.tar.gz"
+}
 ################################################################
 # LUKS variables
 ################################################################
