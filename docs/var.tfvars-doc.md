@@ -193,7 +193,11 @@ The following variable is used to specify the PowerVC [Storage Connectivity Grou
 ```
 scg_id                      = ""
 ```
+This variable determines the visibility of a dynamically created compute template (flavor) in Terraform when `scg_id` is specified. By default, its value is set to `false` meaning the compute template remains private and is not displayed in the UI.
+```
 
+scg_flavor_is_public  = false
+```
 The following variables can be used for disconnected install by using a local mirror registry on the bastion node.
 
 ```
@@ -206,6 +210,11 @@ ocp_release_name           = "ocp-release"
 This variable can be used for trying out custom OpenShift install image for development use.
 ```
 release_image_override     = ""
+```
+
+This variable is used to disable ClusterImagePolicy for QE testing purposes. Set to `true` to disable the ClusterImagePolicy. IBM/Red Hat QE Only: Disables ClusterImagePolicy so Nightly builds can be deployed. This feature puts a cluster in unsupported mode.
+```
+qe_only_disable_image_policy = false
 ```
 
 These variables specify the ansible playbooks that are used for OpenShift install and post-install customizations.
@@ -352,3 +361,25 @@ kdump_img                 = "vmlinuz" #For specifying image other than default k
 kdump_log_path            = "/var/crash" #The file system path in which the kdump saves the vmcore file
 kdump_crash_kernel_memory = "2G-4G:384M,4G-16G:512M,16G-64G:1G,64G-128G:2G,128G-:4G" #The crashkernel memory reservation for kdump occurs during the system boot
 ```
+
+These set of variables are specific for securing additional bastion node features 
+```
+secure_named       = false  # Set to true to enable the secure_named which limits DNS transfers
+secure_http        = false  # Set to true to enable the secure_http excludes the served by header
+secure_nfs         = false  # Set to true to enable the secure_nfs limits the access of NFS served by the bastion to the compute/control plane
+```
+
+This variable can be used to enable API server health checks in HAProxy.
+```
+haproxy_apiserver_healthcheck = true
+```
+
+### Node name configuration
+
+This variable determines whether to include the full domain name for the worker and control plane nodes.
+
+```
+include_cluster_domain      = false
+```
+Set it to true if you prefer to include the full domain name for the worker and control plane nodes during OCP deployment.
+

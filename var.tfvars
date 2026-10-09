@@ -43,7 +43,7 @@ cluster_domain    = "ibm.com"  # Set domain to nip.io or xip.io if you prefer us
 cluster_id_prefix = "test-ocp" # Set it to empty if just want to use cluster_id without prefix
 cluster_id        = ""         # It will use random generated id with cluster_id_prefix if this is not set
 #fips_compliant             = false   # Set it true if you prefer to use FIPS enable in ocp deployment
-
+#include_cluster_domain = false	# Set it to true if you prefer to include the full domain name for the worker/control plane
 ### Misc Customizations
 
 #network_type               = "SRIOV"
@@ -57,6 +57,9 @@ cluster_id        = ""         # It will use random generated id with cluster_id
 #ocp_release_name           = "ocp-release"
 #release_image_override     = ""
 
+#qe_only_disable_image_policy = false # Set to true to disable ClusterImagePolicy for nightly builds. IBM/Red Hat QE Only: This feature puts a cluster in unsupported mode.
+
+#os_image_stream = ""  # Set to 'rhel-9' or 'rhel-10' to pin the OS image stream.
 
 #helpernode_repo            = "https://github.com/RedHatOfficial/ocp4-helpernode"
 #helpernode_tag             = ""
@@ -132,3 +135,5 @@ cluster_id        = ""         # It will use random generated id with cluster_id
 #kdump_img                 = "vmlinuz" #For specifying image other than default kernel image
 #kdump_log_path            = "/var/crash" #The file system path in which the kdump saves the vmcore file
 #kdump_crash_kernel_memory = "2G-4G:384M,4G-16G:512M,16G-64G:1G,64G-128G:2G,128G-:4G" #The crashkernel memory reservation for kdump occurs during the system boot
+
+#haproxy_apiserver_healthcheck = true #  Flag to enable the haproxy_apiserver_healthcheck which enables API server healthchecks in haproxy

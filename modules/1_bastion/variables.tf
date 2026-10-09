@@ -28,6 +28,7 @@ variable "bastion" {}
 variable "bastion_port_ids" {}
 
 variable "scg_id" {}
+variable "scg_flavor_is_public" {}
 variable "openstack_availability_zone" {}
 
 variable "rhel_username" {}
@@ -51,3 +52,4 @@ variable "volume_storage_template" {}
 
 variable "setup_squid_proxy" {}
 variable "proxy" {}
+variable "fips_compliant" {}

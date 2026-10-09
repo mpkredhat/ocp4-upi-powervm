@@ -150,6 +150,11 @@ variable "scg_id" {
   default     = ""
 }
 
+variable "scg_flavor_is_public" {
+  description = "Newly created compute template will be private by default. User can set this to true to make it visible in UI"
+  default     = false
+}
+
 variable "rhel_username" {
   default = "root"
 }
@@ -269,13 +274,13 @@ variable "installer_log_level" {
 variable "helpernode_repo" {
   description = "Set the repo URL for using ocp4-helpernode"
   # Repo for running ocp4 helpernode setup steps.
-  default = "https://github.com/RedHatOfficial/ocp4-helpernode"
+  default = "https://github.com/redhat-cop/ocp4-helpernode"
 }
 
 variable "helpernode_tag" {
   description = "Set the branch/tag name or commit# for using ocp4-helpernode repo"
   # Checkout level for https://github.com/RedHatOfficial/ocp4-helpernode which is used for setting up services required on bastion node
-  default = "94b8a123308f3566835a8ea2f189b204f77af88c"
+  default = "53987a8306764dc0ed77e35ac893c831dedaa8f1"
 }
 
 variable "install_playbook_repo" {
@@ -323,12 +328,24 @@ variable "release_image_override" {
   default = ""
 }
 
+variable "qe_only_disable_image_policy" {
+  type        = bool
+  description = "IBM/Red Hat QE Only: Disables ClusterImagePolicy so Nightly builds can be deployed. This feature puts a cluster in unsupported mode."
+  default     = false
+}
+
 variable "pull_secret_file" {
   default = "data/pull-secret.txt"
 }
 # Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character
 variable "cluster_domain" {
   default = "rhocp.com"
+}
+
+variable "include_cluster_domain" {
+  type        = bool
+  description = "Set to true to include the full domain name for worker and control plane for OCP deployment."
+  default     = false
 }
 # Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character
 # Should not be more than 14 characters
@@ -596,4 +613,44 @@ variable "kdump_crash_kernel_memory" {
   type        = string
   description = "The crashkernel memory reservation for kdump occurs during the system boot"
   default     = "2G-4G:384M,4G-16G:512M,16G-64G:1G,64G-128G:2G,128G-:4G"
+}
+
+################################################################
+# Secure service variables
+################################################################
+
+variable "secure_named" {
+  type        = bool
+  description = "Flag to enable the secure_named which limits DNS transfers"
+  default     = false
+}
+variable "secure_http" {
+  type        = bool
+  description = "Flag to enable the secure_http which disables Track/Trace for httpd server."
+  default     = false
+}
+variable "secure_nfs" {
+  type        = bool
+  description = "Flag to enable the secure_nfs which limits the access of NFS server to the compute/control plane"
+  default     = false
+}
+
+###########################################
+# HAProxy API Server HealthCheck variable
+###########################################
+variable "haproxy_apiserver_healthcheck" {
+  type        = bool
+  description = "Flag to enable the haproxy_apiserver_healthcheck which enables API server healthchecks in haproxy"
+  default     = true
+}
+
+variable "os_image_stream" {
+  type        = string
+  description = "OS image stream for RHEL. Accepts 'rhel-9' or 'rhel-10'. If blank, osImageStream is omitted from install-config.yaml"
+  default     = ""
+
+  validation {
+    condition     = var.os_image_stream == "" || var.os_image_stream == "rhel-9" || var.os_image_stream == "rhel-10"
+    error_message = "The os_image_stream value must be blank, 'rhel-9', or 'rhel-10'."
+  }
 }

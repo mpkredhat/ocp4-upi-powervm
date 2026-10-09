@@ -42,7 +42,7 @@ resource "openstack_compute_flavor_v2" "bastion_scg" {
   disk         = data.openstack_compute_flavor_v2.bastion.disk
   swap         = data.openstack_compute_flavor_v2.bastion.swap
   rx_tx_factor = data.openstack_compute_flavor_v2.bastion.rx_tx_factor
-  is_public    = data.openstack_compute_flavor_v2.bastion.is_public
+  is_public    = var.scg_flavor_is_public
   extra_specs  = merge(data.openstack_compute_flavor_v2.bastion.extra_specs, { "powervm:storage_connectivity_group" : var.scg_id })
 }
 
@@ -74,8 +74,39 @@ locals {
   }
 }
 
+resource "null_resource" "bastion_fips" {
+  count = var.fips_compliant ? local.bastion_count : 0
+
+  connection {
+    type         = "ssh"
+    user         = var.rhel_username
+    host         = openstack_compute_instance_v2.bastion[count.index].access_ip_v4
+    private_key  = var.private_key
+    agent        = var.ssh_agent
+    timeout      = "${var.connection_timeout}m"
+    bastion_host = var.jump_host
+  }
+
+  provisioner "remote-exec" {
+    inline = [<<EOF
+sudo fips-mode-setup --enable
+sudo systemctl reboot
+EOF
+    ]
+  }
+}
+
+resource "time_sleep" "fips_wait_30_seconds" {
+  depends_on = [null_resource.bastion_fips]
+  count      = var.fips_compliant ? 1 : 0
+
+  create_duration = "30s"
+}
+
 resource "null_resource" "bastion_init" {
-  count = local.bastion_count
+  depends_on = [time_sleep.fips_wait_30_seconds]
+  count      = local.bastion_count
+
 
   connection {
     type         = "ssh"
@@ -163,7 +194,7 @@ resource "null_resource" "bastion_register" {
   triggers = {
     bastion_ip         = openstack_compute_instance_v2.bastion[count.index].access_ip_v4
     rhel_username      = var.rhel_username
-    private_key        = var.private_key
+    private_key        = sensitive(var.private_key)
     ssh_agent          = var.ssh_agent
     jump_host          = var.jump_host
     connection_timeout = var.connection_timeout
@@ -191,7 +222,14 @@ else
     sudo subscription-manager register --org='${var.rhel_subscription_org}' --activationkey='${var.rhel_subscription_activationkey}' --force
 fi
 sudo subscription-manager refresh
-sudo subscription-manager attach --auto
+
+RHEL_VERSION=$(grep '^VERSION_ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"' | cut -d'.' -f1)
+if [ "$RHEL_VERSION" -lt 10 ]; then
+    echo "RHEL $RHEL_VERSION detected: Attaching subscriptions..."
+    sudo subscription-manager attach --auto
+else
+    echo "RHEL $RHEL_VERSION detected: Skipping 'attach' (SCA active)."
+fi
 
 EOF
     ]
@@ -242,7 +280,8 @@ resource "null_resource" "enable_repos" {
 if ( [[ -z "${var.rhel_subscription_username}" ]] || [[ "${var.rhel_subscription_username}" == "<subscription-id>" ]] ) && [[ -z "${var.rhel_subscription_org}" ]]; then
   sudo yum install -y epel-release
   sudo yum install -y ansible
-elif [[ $(cat /etc/redhat-release | sed 's/[^0-9.]*//g') > 8.5 ]]; then
+elif [[ "$(printf '%s\n' "8.5" "$(cat /etc/redhat-release | sed 's/[^0-9.]*//g')" | sort -V | head -n1)" == "8.5" ]]; then
+  # Compared release version with 8.5 (eg: 8.10 > 8.5)
   sudo yum install -y ansible-core
 else
   sudo subscription-manager repos --enable ${var.ansible_repo_name}
@@ -341,7 +380,7 @@ resource "null_resource" "setup_nfs_disk" {
       "sudo mkfs.xfs /dev/${local.disk_config.disk_name}",
       "MY_DEV_UUID=$(sudo blkid -o export /dev/${local.disk_config.disk_name} | awk '/UUID/{ print }')",
       "echo \"$MY_DEV_UUID ${local.storage_path} xfs defaults 0 0\" | sudo tee -a /etc/fstab > /dev/null",
-      "sudo mount ${local.storage_path}",
+      "sudo mount ${local.storage_path}; sudo systemctl daemon-reload"
     ]
   }
 }

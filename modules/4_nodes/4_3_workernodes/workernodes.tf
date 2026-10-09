@@ -42,7 +42,11 @@ data "ignition_file" "w_hostname" {
   content {
     mime    = "text/plain"
     content = <<EOF
+%{if var.include_cluster_domain}
+worker-${count.index}.${var.cluster_id}.${var.cluster_domain}
+%{else}
 worker-${count.index}
+%{endif}
 EOF
   }
 }
@@ -56,7 +60,7 @@ resource "openstack_compute_flavor_v2" "worker_scg" {
   disk         = data.openstack_compute_flavor_v2.worker.disk
   swap         = data.openstack_compute_flavor_v2.worker.swap
   rx_tx_factor = data.openstack_compute_flavor_v2.worker.rx_tx_factor
-  is_public    = data.openstack_compute_flavor_v2.worker.is_public
+  is_public    = var.scg_flavor_is_public
   extra_specs  = merge(data.openstack_compute_flavor_v2.worker.extra_specs, { "powervm:storage_connectivity_group" : var.scg_id })
 }
 
@@ -106,7 +110,7 @@ resource "null_resource" "remove_worker" {
   triggers = {
     bastion_ip         = var.bastion_ip
     rhel_username      = var.rhel_username
-    private_key        = var.private_key
+    private_key        = sensitive(var.private_key)
     ssh_agent          = var.ssh_agent
     connection_timeout = var.connection_timeout
     jump_host          = var.jump_host
